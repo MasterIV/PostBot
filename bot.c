@@ -1,8 +1,3 @@
-struct Vector {
-  int x;
-  int y;
-};
-
 struct Bot {
   struct Vector position; 
   struct Vector velocity;
@@ -16,20 +11,35 @@ struct Bot {
 unsigned char func_1_return;
 unsigned char func_2_return;
 
+const unsigned char bot_sprit_up = 24;
+const unsigned char bot_sprit_down = 4;
+const unsigned char bot_sprit_side = 44;
+
 void turn_bot() {
-  if(bot.direction % 2) {
-	// horizontal sprites
-	set_sprite_tile(0, 8);
-	set_sprite_tile(1, 10);
+  if(bot.direction == 3) {
+	// right sprites
+	set_sprite_tile(0, bot_sprit_side+2);
+	set_sprite_tile(1, bot_sprit_side);
+  } else if(bot.direction == 1) {
+	// left sprites
+	set_sprite_tile(0, bot_sprit_side);
+	set_sprite_tile(1, bot_sprit_side+2);
+  } else if(bot.direction == 2) {
+	// down sprites
+	set_sprite_tile(0, bot_sprit_down);
+	set_sprite_tile(1, bot_sprit_down+2);
   } else {
-	// vertical sprites
-	set_sprite_tile(0, 4);
-	set_sprite_tile(1, 6);
+	// up sprites
+	set_sprite_tile(0, bot_sprit_up);
+	set_sprite_tile(1, bot_sprit_up+2);
   }
 	
-  if(bot.direction > 1) {
-	set_sprite_prop(0, S_FLIPY);
-	set_sprite_prop(1, S_FLIPY);
+  if(bot.direction == 3) {
+	set_sprite_prop(0, S_FLIPX);
+	set_sprite_prop(1, S_FLIPX);
+  } else {
+	set_sprite_prop(0, 0);
+	set_sprite_prop(1, 0);
   }
 }
 
@@ -39,11 +49,6 @@ void move_bot() {
 }
 
 void init_bot() {
-  program[0] = 1;
-  program[1] = 3;
-  program[2] = 1;
-  program[3] = 1;
-  
   bot.command = 0;
   bot.direction = 0;  
   bot.animation = 0; 
@@ -54,26 +59,12 @@ void init_bot() {
 }
 
 void command_move() {
-  switch(bot.direction) {
-	case 0: // up
-	  bot.velocity.x = 0;
-	  bot.velocity.y = -1;
-	  break;
-	case 1: // right
-	  bot.velocity.x = 1;
-	  bot.velocity.y = 0;
-	  break;
-	case 2: // down
-	  bot.velocity.x = 0;
-	  bot.velocity.y = 1;
-	  break;
-	case 3: // left
-	  bot.velocity.x = -1;
-	  bot.velocity.y = 0;
-	  break;
-  }
+  set_velocity(bot.direction, &bot.velocity);
   
-  bot.animation = 16;
+  if(tile_at_next(&bot.position, &bot.velocity) < tile_objective_inactive)
+  	bot.animation = 16;
+  else
+	bot.delay = 10;
 }
 
 void command_turn(char dir) {
@@ -127,7 +118,7 @@ void update_bot() {
 	  	command_turn(1);
 	  	break;
 	  case 4: // Transmit
-	  
+	    init_transmission(bot.direction, &bot.position);
 	  	break;
 	  case 5: // Function 1
 	    func_1_return = command_next(bot.command);

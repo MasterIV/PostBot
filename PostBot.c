@@ -5,18 +5,25 @@
 
 #include "background.tiles"
 #include "sprites.tiles"
+#include "levelset.tiles"
+#include "title_sprites.tiles"
 #include "command.map"
 #include "level_1.map"
 #include "level_2.map"
 #include "programming.map"
 #include "title.map"
 
+struct Vector {
+  int x;
+  int y;
+};
+
 /*
   0-09 main program
  10-14 function 1
  15-19 function 2
 */
-char program[20];
+unsigned char program[20];
 
 /*
  0 = title screen
@@ -30,17 +37,24 @@ int screen;
 
 // current level
 char level;
+unsigned char current_level[360];
 
 /** move all sprites out of the screen */
 void reset_sprites() {
   int i;
-  for(i = 0; i < 40; i++)
+  for(i = 0; i < 40; i++) {
 	move_sprite(i, 0, 0);
+	set_sprite_prop(i, 0);
+  }
 }
 
 void init_programming();
 void init_level();
+void init_victory();
+void set_command(int row, int col);
 
+#include "map.c"
+#include "transmission.c"
 #include "bot.c"
 #include "command.c"
 #include "cursor.c"
@@ -52,6 +66,16 @@ void init_level();
 void init() {
   //init_programming();
   //init_level();
+  
+  program[0] = 1;
+  program[1] = 1;
+  program[2] = 3;
+  program[3] = 4;
+  program[4] = 1;
+  program[5] = 3;
+  program[6] = 4;
+  
+  
   init_title();
 }
 
@@ -82,7 +106,7 @@ void main() {
   
   SPRITES_8x16;
 
-  set_sprite_data(0, 12, sprites);
+  set_sprite_data(0, 68, sprites);
 
   VBK_REG = 1;
   VBK_REG = 0;
