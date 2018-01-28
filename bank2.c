@@ -5,6 +5,10 @@
 #include "level_2.map"
 #include "level_3.map"
 #include "level_4.map"
+#include "level_5.map"
+#include "level_6.map"
+#include "level_7.map"
+#include "level_8.map"
 
 int copy_map(unsigned char *dest, unsigned char *src) {
   int i, objectives = 0;
@@ -30,5 +34,13 @@ int show_level(unsigned char level, unsigned char *dest) {
 	   return copy_map(dest, level_3);
 	 case 3:
 	   return copy_map(dest, level_4);
+	 case 4:
+	   return copy_map(dest, level_5);
+	 case 5:
+	   return copy_map(dest, level_6);
+	 case 6:
+	   return copy_map(dest, level_8);
+	 case 7:
+	   return copy_map(dest, level_7);
   }
 }

@@ -17,10 +17,10 @@ unsigned char tile_at(struct Vector *pos) {
 	return 0;
 }
 
-unsigned char tile_at_next(struct Vector *pos, struct Vector *velocity) {
+unsigned char tile_at_next(struct Vector *pos, struct Vector *velocity, unsigned char mul) {
   struct Vector dest;
-  dest.x = pos->x + velocity->x * 7;
-  dest.y = pos->y + velocity->y * 7;
+  dest.x = pos->x + velocity->x * mul;
+  dest.y = pos->y + velocity->y * mul;
   return tile_at(&dest);
 }
 
@@ -46,30 +46,30 @@ void set_velocity(unsigned char direction, struct Vector *velocity) {
   }
 }
 
-void update_victory() {
-  if(joypad() && level < 4) {
-	init_level();
-  }
-}
-
 void init_victory() {
   int i;
+  DISPLAY_OFF;
+  
   screen = 5;
   level++;
   reset_sprites();
   
-  if( level < 4 ) {
-	display_victory();
-  } else {
-	printf("Congratulations!\n\n");
-	printf("You completed the game\n");
-  }
-  
   for(i = 0; i < 20; i++)
 	program[i] = 0;
+
+  display_victory();
   
-  waitpad(255);
-  init_level();
+  if( level < level_count ) {
+    DISPLAY_ON;
+	waitpad(255);
+	init_level();
+  } else {
+	for(i = 0; i < 12; i++)
+	  if(i<6) current_level[247+i] = 71+i;
+	  else current_level[261+i] = 71+i;
+  	set_bkg_tiles(0, 0, 20, 18, current_level);
+    DISPLAY_ON;
+  }
 }
 
 void toggle_objective(struct Vector *pos) {

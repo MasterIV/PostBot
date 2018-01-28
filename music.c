@@ -1,7 +1,3 @@
-int currentBeat;
-int timerCounter;
-
-//Define note names
 typedef enum {
   C3, Cd3, D3, Dd3, E3, F3, Fd3, G3, Gd3, A3, Ad3, B3,
   C4, Cd4, D4, Dd4, E4, F4, Fd4, G4, Gd4, A4, Ad4, B4,
@@ -10,7 +6,7 @@ typedef enum {
   C7, Cd7, D7, Dd7, E7, F7, Fd7, G7, Gd7, A7, Ad7, B7,
   C8, Cd8, D8, Dd8, E8, F8, Fd8, G8, Gd8, A8, Ad8, B8,
   SILENCE
-} pitch;
+} Pitch;
 
 const UWORD frequencies[] = { //values based on a formula used by the GB processor
   44, 156, 262, 363, 457, 547, 631, 710, 786, 854, 923, 986,
@@ -22,6 +18,13 @@ const UWORD frequencies[] = { //values based on a formula used by the GB process
   0
 };
 
+enum DurationNote
+{
+    LONG = 0x84U,
+    SHORT = 0x81U,
+    LONG_LONG = 135
+};
+
 //Define Instrument names
 //Instruments should be confined to one channel
 //due to different registers used between ch1, 2, 3, 4
@@ -29,80 +32,383 @@ typedef enum {
 	NONE,
 	MELODY,  //channel 1
 	HARMONY, //channel 1
-	SNARE,   //channel 4
+	SNARE,   //channel 2
+    WAVE,    //channel 3
 	CYMBAL   //channel 4
-} instrument;
+} Instrument;
 
-//Define a note as having a pitch, instrument, and volume envelope
+//Define a Note as having a Pitch, Instrument, and volume envelope
 typedef struct {
-	instrument i;
-	pitch p;
-	UBYTE env;
-} note;
+	Instrument i;
+	Pitch p;
+	UINT16 env;
+} Note;
 
-//define a song as a series of note structs
-//This song is a 16 note loop on channel 1
-//each channel should have its own array, so
-//that multiple notes can be played simultaneously
-note song_ch1[16] = { //notes to be played on channel 1
-	{MELODY, A5, 0x81U},
-	{MELODY, C5, 0xA2U},
-	{MELODY, E5, 0x81U},
-	{MELODY, Gd5, 0x84U},
-	{HARMONY, C4, 0x81U},
-	{HARMONY, E7, 0x87U},
-	{MELODY, C6, 0x81U},
-	{NONE, SILENCE, 0x00U},
-	{NONE, SILENCE, 0x00U},
-	{MELODY, E4, 0x81U},
-	{MELODY, F4, 0x84U},
-	{HARMONY, G5, 0x81U},
-	{NONE, SILENCE, 0x00U},
-	{MELODY, F5, 0x84U},
-	{HARMONY, B4, 0x81U},
-	{NONE, SILENCE, 0x00U}
+const Note jingle[] = {
+    {MELODY, C3, LONG},
+	{MELODY, G3, LONG},
+	{MELODY, C4, LONG}
 };
 
-//function to set sound registers based on notes chosen
-void setNote(note *n){
-	switch((*n).i){
-		case MELODY:
-			NR10_REG = 0x00U; //pitch sweep
-			NR11_REG = 0x84U; //wave duty
-			NR12_REG = (*n).env; //envelope
-			NR13_REG = (UBYTE)frequencies[(*n).p]; //low bits of frequency
-			NR14_REG = 0x80U | ((UWORD)frequencies[(*n).p]>>8); //high bits of frequency (and sound reset)
-		break;
-		case HARMONY:
-			NR10_REG = 0x01U;
-			NR11_REG = 0x00U; //wave duty for harmony is different
-			NR12_REG = (*n).env;
-			NR13_REG = (UBYTE)frequencies[(*n).p];
-			NR14_REG = 0x80U | ((UWORD)frequencies[(*n).p]>>8);
-		break;
-		case SNARE:
-		break;
-		case CYMBAL:
-		break;
-	}
-}
+const Note game_ch1[] = {
+  {MELODY, D4, LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {MELODY, C4, LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {MELODY, D4, LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {MELODY, C4, LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {MELODY, G3, LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {MELODY, C4, SHORT},
+  {NONE, SILENCE, LONG_LONG},
+  
+  {MELODY, D4, LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {NONE, SILENCE, LONG_LONG},
+  {NONE, SILENCE, LONG_LONG},
+};
 
-//This function plays whatever note is on
-//the current beat in Channel 1
-void playChannel1(){
-	setNote(&song_ch1[currentBeat]);
-	NR51_REG |= 0x11U; //enable sound on channel 1
-}
+const Note game_ch2[] = {
+  {CYMBAL, G3, SHORT},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {NONE, SILENCE, LONG_LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {CYMBAL, G3, SHORT},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {NONE, SILENCE, LONG_LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {CYMBAL, G3, SHORT},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {NONE, SILENCE, LONG_LONG},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {CYMBAL, G3, SHORT},
+  {NONE, SILENCE, LONG_LONG},
+	
+  {NONE, SILENCE, LONG_LONG},
+  {NONE, SILENCE, LONG_LONG},
+};
 
-//Timer function gets called 16 times a second
-void timerInterrupt(){
-	if (timerCounter == 4){ //every 4 ticks is a beat, or 4 beats per second
-		timerCounter=0;
-		currentBeat = currentBeat == 15 ? 0 : currentBeat+1;
-		playChannel1(); //every beat, play the sound for that beat
-		//playChannel2(); make more functions to play sounds on 
-		//playChannel3(); the other channels
-		//playChannel4();
-	}
-	timerCounter++;
-}
+const Note song_gameplay_ch1[] = {
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, E5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, E5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, C5, LONG},
+    {MELODY, C5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG},
+    {MELODY, C5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, E5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, E5, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, B4, LONG},
+    {MELODY, B4, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, C5, LONG},
+    {MELODY, B4, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A5, LONG},
+    {MELODY, G5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, F5, LONG},
+    {MELODY, F5, LONG},
+    {MELODY, E5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, E5, LONG_LONG},
+    {MELODY, D5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG},
+    {MELODY, C5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, G4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, E5, LONG},
+    {MELODY, C5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, G4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, C5, LONG},
+    {MELODY, B4, LONG_LONG},
+    {NONE, SILENCE, LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, G4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A4, LONG},
+    {MELODY, G4, LONG},
+    {MELODY, A5, LONG},
+    {MELODY, G5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, F5, LONG},
+    {MELODY, F5, LONG},
+    {MELODY, E5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, E5, LONG_LONG},
+    {MELODY, D5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {MELODY, D5, LONG},
+    {MELODY, C5, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG}
+};
+
+const Note song_gameplay_ch2[] = {
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {CYMBAL, G3, SHORT}
+};
+
+const Note song_gameplay_ch4[] = {
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG},
+    {SNARE, G5, SHORT},
+    {NONE, SILENCE, LONG_LONG}
+};

@@ -44,7 +44,7 @@ void update_transmission() {
 	}
 
 	// Or transmission hit a wall
-	if(tile_at_next(&transmission.position, &transmission.velocity) > tile_objective_inactive) {
+	if(tile_at_next(&transmission.position, &transmission.velocity, 8) > tile_objective_inactive) {
 	  disable_transmission();
 	  return;
 	}

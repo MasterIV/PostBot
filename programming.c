@@ -52,37 +52,30 @@ void draw_instructions() {
 }
 
 void update_programming() {
-  if(joypad() == J_B) {
-	init_level();
-	return;
-  }
-  
-//  if(joypad() == J_SELECT) {
-//	  init_level();
-//	  return;
-//  }
-  
-  cursor_update();
-  
-  draw_instructions();
+  if(cursor_update())
+    draw_instructions();
 }
 
 void init_programming() {
+  DISPLAY_OFF;
   screen = 3;
   reset_sprites();
   display_programming();
-  
+  draw_instructions();
   cursor_init();
+  DISPLAY_ON;
 }
 
-void set_command(int row, int col) {
+void set_command(int row, int col, char dir) {
   int program_location = (row * 5) + col;
   
   //cycling
-  if (program[program_location] == 6)
+  if (program[program_location] == 6 && dir > 0)
 	program[program_location] = 0;
+  else if (program[program_location] == 0 && dir < 0)
+	program[program_location] = 6;
   else
-    program[program_location]++;
+    program[program_location] = program[program_location] + dir;
 }
 
 /*

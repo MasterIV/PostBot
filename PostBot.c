@@ -9,7 +9,13 @@ struct Vector {
 void init_programming();
 void init_level();
 void init_victory();
-void set_command(int row, int col);
+void set_command(int row, int col, char dir) ;
+
+//music
+UINT16 currentBeat;
+UINT8 timerCounter;
+UINT8 muteChannel1;
+UINT8 muteChannel4;
 
 /* 0-09 main program
   10-14 function 1
@@ -26,8 +32,11 @@ int screen;
 
 // current level
 int objectives;
-UBYTE level;
+UBYTE level = 0;
 UBYTE current_level[360];
+const UBYTE level_count = 8;
+
+UBYTE joypad_prev;
 
 // bank 1: title screen
 void show_title();
@@ -51,10 +60,10 @@ void display_programming() {
 }
 
 // bank 4: victory
-void show_victory();
+void show_victory(unsigned char *dest);
 void display_victory() {
   SWITCH_ROM_MBC1(1);
-  show_victory();
+  show_victory(&current_level);
 }
 
 
@@ -81,13 +90,12 @@ void update() {
 		update_level_idle();
 		break;
 	case 2:
+		update_music();
+		wait_vbl_done();
 		update_level_running();
 		break;
 	case 3:
 		update_programming();
-		break;
-	case 5:
-		update_victory();
 		break;
   }
 }
@@ -104,22 +112,31 @@ void main() {
   SHOW_BKG;
   DISPLAY_ON;
   
+  init_sounds();
+  
+  play_jingle();
+  
   waitpad(255);
   
   set_bkg_tiles(0, 0, 20, 18, current_level);
   
-  printf(" \n press select in\n level to program\n robot\n\n");
-  printf(" press a in level\n to run program\n\n");
-  printf(" press b to abort\n or return\n\n");
-  printf(" press start\n");
+  printf(" \n Program the robot\n to deliver all\n transmissions\n\n");
+  printf(" Press SELECT to\n program the robot\n\n");
+  printf(" Press A in level\n to run program\n\n");
+  printf(" Press start to\n continue\n");
   
   waitpad(J_START);
   
   SWITCH_ROM_MBC1(2);
+  
+  program[0] = 1;
+  program[2] = 4;
+  
   init_level();
 
   while(1) {
 	update();
-	delay(35);
+	update_music();
+	wait_vbl_done();
   }
 }

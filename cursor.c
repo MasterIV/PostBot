@@ -1,11 +1,9 @@
-UBYTE joypad_prev;
-
 struct Cursor {
   unsigned char row;
   unsigned char col;
 } cursor;
 
-void cursor_update() {
+int cursor_update() {
   UBYTE keys, diff;
   int cx, cy, update_pos;
   
@@ -31,7 +29,9 @@ void cursor_update() {
 	  case J_DOWN: if(cursor.row < row_max) cursor.row++; break;
 	  case J_LEFT: if(cursor.col > col_min) cursor.col--; break;
 	  case J_RIGHT: if(cursor.col < col_max) cursor.col++; break;
-	  case J_A: set_command(cursor.row, cursor.col); break;
+	  case J_A: set_command(cursor.row, cursor.col, 1); return 1;
+	  case J_B: set_command(cursor.row, cursor.col, -1); return 1;
+	  case J_SELECT: init_level(); return 0;
 	}
 	
 	update_pos = 1;
@@ -73,6 +73,8 @@ void cursor_update() {
 	//bottom-right edge
 	move_sprite(7, cx + 16, cy + 16);
   }
+  
+  return 0;
 }
 
 void cursor_init() {
@@ -106,6 +108,6 @@ void cursor_init() {
   set_sprite_tile(7, 2);
   set_sprite_prop(7, S_FLIPX | S_FLIPY);
   
-  joypad_prev = 1;
+  joypad_prev = joypad();
   cursor_update();
 }
