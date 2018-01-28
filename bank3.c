@@ -1,8 +1,20 @@
+#include <gb/gb.h>
+#include <stdio.h>
+
+#include "title_sprites.tiles"
+#include "title.map"
+#include "sprites.tiles"
+
 void init_title() {
   int i;
   
+  set_sprite_data(0, 68, sprites);
   set_bkg_data(0, 138, title_sprites);
   set_bkg_tiles(0, 0, 20, 18, title);
+  
+  SHOW_SPRITES;  
+  SHOW_BKG;
+  DISPLAY_ON;
   
   waitpad(255);
   

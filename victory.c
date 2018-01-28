@@ -21,9 +21,4 @@ void init_victory() {
   for(i = 0; i < 20; i++) {
 	program[i] = 0;
   }
-  
-  
-
-  //set_bkg_data(0, 63, victory_sprites);
-  //set_bkg_tiles(0, 0, 20, 18, victory);
 }
