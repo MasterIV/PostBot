@@ -58,6 +58,7 @@ void init_victory() {
 	program[i] = 0;
 
   display_victory();
+  play_win();
   
   if( level < level_count ) {
     DISPLAY_ON;

@@ -66,11 +66,40 @@ void play_gameplay_music(){
 void play_jingle() {
   setNote(&jingle[0]);
   NR51_REG |= 0x11U;
-  delay(400);
+  delay(100);
   setNote(&jingle[1]);
   NR51_REG |= 0x11U;
-  delay(400);
+  delay(100);
   setNote(&jingle[2]);
+  NR51_REG |= 0x11U;
+}
+
+void play_win() {
+  setNote(&you_win[0]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[1]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[2]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[3]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[4]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[5]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[6]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[7]);
+  NR51_REG |= 0x11U;
+  delay(200);
+    setNote(&you_win[8]);
   NR51_REG |= 0x11U;
 }
 
@@ -78,7 +107,7 @@ void update_music(){
     if (timerCounter >= 14){
             timerCounter = 0;
 	  
-            if (currentBeat < 15) //song length - 1
+            if (currentBeat < 31) //song length - 1
             {
                 currentBeat++;
             }
