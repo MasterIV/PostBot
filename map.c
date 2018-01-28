@@ -1,18 +1,5 @@
-unsigned char objectives;
-
 const unsigned char tile_objective_inactive = 17;
 const unsigned char tile_objective_active = 21;
-
-void copy_map(unsigned char *dest, unsigned char *src) {
-  int i;
-  objectives = 0;
-  
-  for(i = 0; i < 360; i++) {
-	dest[i] = src[i];
-	if(src[i] == tile_objective_inactive)
-	  objectives++;
-  }
-}
 
 int get_offset(struct Vector *pos) {
   unsigned char x, y;
@@ -57,6 +44,32 @@ void set_velocity(unsigned char direction, struct Vector *velocity) {
 	  velocity->y = 0;
 	  break;
   }
+}
+
+void update_victory() {
+  if(joypad() && level < 4) {
+	init_level();
+  }
+}
+
+void init_victory() {
+  int i;
+  screen = 5;
+  level++;
+  reset_sprites();
+  
+  if( level < 4 ) {
+	display_victory();
+  } else {
+	printf("Congratulations!\n\n");
+	printf("You completed the game\n");
+  }
+  
+  for(i = 0; i < 20; i++)
+	program[i] = 0;
+  
+  waitpad(255);
+  init_level();
 }
 
 void toggle_objective(struct Vector *pos) {

@@ -35,20 +35,20 @@ void draw_instructions() {
 	}
 	
 	if (program[counter] == 0) {
-	  programming[topleft] = 0;
-	  programming[topright] = 0;
-	  programming[bottomleft] = 0;
-	  programming[bottomright] = 0;
+	  current_level[topleft] = 0;
+	  current_level[topright] = 0;
+	  current_level[bottomleft] = 0;
+	  current_level[bottomright] = 0;
 	} else {
-	  programming[topleft] = base_tile;
-	  programming[topright] = base_tile + 1;
-	  programming[bottomleft] = base_tile + 2;
-	  programming[bottomright] = base_tile + 3;
+	  current_level[topleft] = base_tile;
+	  current_level[topright] = base_tile + 1;
+	  current_level[bottomleft] = base_tile + 2;
+	  current_level[bottomright] = base_tile + 3;
 	}
   }
   
   //update background
-  set_bkg_tiles(0, 0, 20, 18, programming);
+  set_bkg_tiles(0, 0, 20, 18, current_level);
 }
 
 void update_programming() {
@@ -70,8 +70,7 @@ void update_programming() {
 void init_programming() {
   screen = 3;
   reset_sprites();
-  set_bkg_data(0, 40, background);
-  set_bkg_tiles(0, 0, 20, 18, programming);
+  display_programming();
   
   cursor_init();
 }

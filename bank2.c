@@ -1,79 +1,34 @@
 #include <gb/gb.h>
-#include <stdio.h>
 
-#include "background.tiles"
 #include "levelset.tiles"
-
 #include "level_1.map"
 #include "level_2.map"
 #include "level_3.map"
 #include "level_4.map"
-#include "programming.map"
 
-
-struct Vector {
-  int x;
-  int y;
-};
-
-void init_programming();
-void init_level();
-void init_victory();
-void set_command(int row, int col);
-
-/*
-  0-09 main program
- 10-14 function 1
- 15-19 function 2
-*/
-unsigned char program[20];
-
-/*
- 0 = title screen
- 1 = level, program not running
- 2 = level, program running
- 3 = programming
- 4 = command selection
- 5 = level completed
-*/
-int screen;
-
-// current level
-char level;
-unsigned char current_level[360];
-
-/** move all sprites out of the screen */
-void reset_sprites() {
-  int i;
-  for(i = 0; i < 40; i++) {
-	move_sprite(i, 0, 0);
-	set_sprite_prop(i, 0);
+int copy_map(unsigned char *dest, unsigned char *src) {
+  int i, objectives = 0;
+  
+  for(i = 0; i < 360; i++) {
+	dest[i] = src[i];
+	if(src[i] == 17)
+	  objectives++;
   }
+  
+  return objectives;
 }
 
-#include "music.c"
-#include "sounds.c"
-#include "map.c"
-#include "transmission.c"
-#include "bot.c"
-#include "cursor.c"
-#include "levels.c"
-#include "programming.c"
-#include "victory.c"
-
-void update() {
-  switch(screen) {
-	case 1:
-		update_level_idle();
-		break;
-	case 2:
-		update_level_running();
-		break;
-	case 3:
-		update_programming();
-		break;
-	case 5:
-		update_victory();
-		break;
+int show_level(unsigned char level, unsigned char *dest) {
+  set_bkg_data(0, 37, levelset);
+  
+   switch(level) {
+	 case 0:
+	   return copy_map(dest, level_1);
+	 case 1:
+	   return copy_map(dest, level_2);
+	 case 2:
+	   return copy_map(dest, level_3);
+	 case 3:
+	   return copy_map(dest, level_4);
   }
 }

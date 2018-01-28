@@ -1,32 +1,27 @@
 void init_level() {
-  
   switch(level) {
 	case 0:
 		bot.position.x = 56;
 		bot.position.y = 80;
-		copy_map(current_level, level_1);
 		break;
 	case 1:
 		bot.position.x = 72;
 		bot.position.y = 96;
-		copy_map(current_level, level_2);
 		break;
 	case 2:
 		bot.position.x = 104;
 		bot.position.y = 48;
-		copy_map(current_level, level_3);
 		break;
 	case 3:
 		bot.position.x = 72;
 		bot.position.y = 128;
-		copy_map(current_level, level_4);
 		break;
 	default:
 		printf("Invalid level");
 	
   }
   
-  set_bkg_data(0, 37, levelset);
+  display_level();
   set_bkg_tiles(0, 0, 20, 18, current_level);
   
   reset_sprites();
