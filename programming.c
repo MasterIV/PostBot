@@ -56,10 +56,11 @@ void update_programming() {
 	init_level();
 	return;
   }
-  if(joypad() == J_SELECT) {
-	init_level();
-	return;
-  }
+  
+//  if(joypad() == J_SELECT) {
+//	  init_level();
+//	  return;
+//  }
   
   cursor_update();
   

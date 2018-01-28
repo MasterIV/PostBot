@@ -18,6 +18,8 @@ void disable_transmission() {
 }
 
 void init_transmission(unsigned char dir, struct Vector *pos) {
+  pewpew();
+  
   transmission.active = 1;
   
   transmission.position.x = pos->x;

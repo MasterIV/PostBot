@@ -1,17 +1,17 @@
 #include <gb/gb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <rand.h>
 
 #include "background.tiles"
 #include "sprites.tiles"
 #include "levelset.tiles"
-#include "title_sprites.tiles"
 #include "command.map"
 #include "level_1.map"
 #include "level_2.map"
+#include "level_3.map"
+#include "level_4.map"
 #include "programming.map"
-#include "title.map"
+
 
 struct Vector {
   int x;
@@ -53,6 +53,8 @@ void init_level();
 void init_victory();
 void set_command(int row, int col);
 
+#include "music.c"
+#include "sounds.c"
 #include "map.c"
 #include "transmission.c"
 #include "bot.c"
@@ -64,18 +66,7 @@ void set_command(int row, int col);
 #include "victory.c"
 
 void init() {
-  //init_programming();
-  //init_level();
-  
   program[0] = 1;
-  program[1] = 1;
-  program[2] = 3;
-  program[3] = 4;
-  program[4] = 1;
-  program[5] = 3;
-  program[6] = 4;
-  
-  
   init_title();
 }
 
@@ -103,7 +94,6 @@ void update() {
 }
 
 void main() {
-  
   SPRITES_8x16;
 
   set_sprite_data(0, 68, sprites);

@@ -1,3 +1,6 @@
+#include "title_sprites.tiles"
+#include "title.map"
+
 unsigned char instructions;
 
 void init_title() {

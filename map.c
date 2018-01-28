@@ -1,7 +1,7 @@
 unsigned char objectives;
 
-const unsigned char tile_objective_inactive = 1;
-const unsigned char tile_objective_active = 5;
+const unsigned char tile_objective_inactive = 17;
+const unsigned char tile_objective_active = 21;
 
 void copy_map(unsigned char *dest, unsigned char *src) {
   int i;
