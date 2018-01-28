@@ -77,10 +77,10 @@ void reset_sprites() {
 }
 
 #include "sounds.c"
+#include "cursor.c"
 #include "map.c"
 #include "transmission.c"
 #include "bot.c"
-#include "cursor.c"
 #include "levels.c"
 #include "programming.c"
 

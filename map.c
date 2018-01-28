@@ -53,15 +53,16 @@ void init_victory() {
   screen = 5;
   level++;
   reset_sprites();
+  cursor_reset();
   
   for(i = 0; i < 20; i++)
 	program[i] = 0;
 
   display_victory();
-  play_win();
-  
+
   if( level < level_count ) {
     DISPLAY_ON;
+	play_win(); //play winning jingle
 	waitpad(255);
 	init_level();
   } else {
@@ -70,6 +71,7 @@ void init_victory() {
 	  else current_level[261+i] = 71+i;
   	set_bkg_tiles(0, 0, 20, 18, current_level);
     DISPLAY_ON;
+	play_win(); //play winning jingle
   }
 }
 

@@ -77,9 +77,12 @@ int cursor_update() {
   return 0;
 }
 
-void cursor_init() {
+void cursor_reset() {
   cursor.row = 0;
   cursor.col = 0;
+}
+
+void cursor_init() {
   
   //0 topleft corner + left edge
   //2 top edge + center blank tile
